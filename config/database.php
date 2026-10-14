@@ -97,6 +97,9 @@ return [
             'prefix_indexes' => true,
             'search_path' => 'public',
             'sslmode' => env('DB_SSLMODE', 'prefer'),
+            // Samakan timezone sesi PostgreSQL dengan aplikasi, supaya timestamptz
+            // tidak bergeser mengikuti setting server database.
+            'timezone' => env('APP_TIMEZONE', 'Asia/Jakarta'),
         ],
 
         'sqlsrv' => [
