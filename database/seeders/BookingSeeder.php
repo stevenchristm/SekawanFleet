@@ -14,7 +14,7 @@ class BookingSeeder extends Seeder
         $approvers = User::where('role', 'approver')->get();
         $vehicles  = Vehicle::all();
         $drivers   = Driver::all();
-        $dests     = ['Tambang Site 1', 'Tambang Site 3', 'Pelabuhan Morowali', 'Bandara Kasiguncu', 'Kantor Cabang'];
+        $dests     = ['Site Morowali - Pit Blok B', 'Site Pomalaa - Smelter', 'Site Kolaka - Jetty', 'Pelabuhan Morowali', 'Bandara Mutiara SIS Al-Jufri Palu', 'Kantor Cabang Palu'];
         $seq = [];
 
         $make = function (Carbon $start, string $status, array $levels) use ($admin, $dests, &$seq, &$vehicles, &$drivers, $approvers) {

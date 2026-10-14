@@ -1,129 +1,134 @@
 <x-app-layout>
-    <x-slot name="header">
-        <h2 class="font-semibold text-xl text-gray-800 leading-tight">Log Aktivitas</h2>
-        <p class="text-sm text-gray-500">Riwayat seluruh proses: login, pemesanan, persetujuan, laporan, dan perubahan data armada.</p>
-    </x-slot>
+    <x-slot name="title">Log Aktivitas</x-slot>
+    <x-slot name="subtitle">Riwayat seluruh proses: login, pemesanan, persetujuan, laporan, dan perubahan data armada.</x-slot>
 
     @php
-        $selectClass = 'mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:border-indigo-500 focus:ring-indigo-500';
         $badge = [
-            'auth' => 'bg-gray-100 text-gray-700',
-            'booking' => 'bg-blue-100 text-blue-800',
-            'approval' => 'bg-green-100 text-green-800',
-            'report' => 'bg-purple-100 text-purple-800',
-            'fleet' => 'bg-orange-100 text-orange-800',
+            'auth' => ['bg-slate-100 text-slate-800', 'bg-slate-600'],
+            'booking' => ['bg-blue-100 text-blue-800', 'bg-blue-600'],
+            'approval' => ['bg-emerald-100 text-emerald-800', 'bg-emerald-600'],
+            'report' => ['bg-purple-100 text-purple-800', 'bg-purple-600'],
+            'fleet' => ['bg-amber-100 text-amber-800', 'bg-amber-600'],
         ];
         $fmt = fn ($v) => is_array($v) ? json_encode($v, JSON_UNESCAPED_UNICODE) : (is_bool($v) ? ($v ? 'ya' : 'tidak') : ($v ?? '-'));
     @endphp
 
-    <div class="py-8">
-        <div class="max-w-7xl mx-auto space-y-4 px-4 sm:px-6 lg:px-8">
-            <form method="GET" class="grid grid-cols-1 gap-3 rounded-lg bg-white p-4 shadow-sm sm:grid-cols-2 lg:grid-cols-6">
-                <div class="lg:col-span-2">
-                    <x-input-label for="q" value="Cari deskripsi" />
-                    <x-text-input id="q" name="q" class="mt-1 block w-full" :value="$filters['q'] ?? ''" placeholder="mis. BK-202610" />
+    {{-- Filter --}}
+    <section class="card p-5">
+        <form method="GET" class="grid grid-cols-1 items-end gap-4 sm:grid-cols-2 lg:grid-cols-6">
+            <div class="lg:col-span-2">
+                <label for="q" class="form-label">Cari deskripsi</label>
+                <div class="relative">
+                    <span class="material-symbols-outlined pointer-events-none absolute inset-y-0 left-3 my-auto text-base text-slate-400" aria-hidden="true">search</span>
+                    <input id="q" name="q" type="search" value="{{ $filters['q'] ?? '' }}" placeholder="mis. BK-202610" class="form-input pl-9">
                 </div>
-                <div>
-                    <x-input-label for="log" value="Kategori" />
-                    <select id="log" name="log" class="{{ $selectClass }}">
-                        <option value="">Semua</option>
-                        @foreach ($categories as $key => $label)
-                            <option value="{{ $key }}" @selected(($filters['log'] ?? '') === $key)>{{ $label }}</option>
-                        @endforeach
-                    </select>
-                </div>
-                <div>
-                    <x-input-label for="user" value="User" />
-                    <select id="user" name="user" class="{{ $selectClass }}">
-                        <option value="">Semua</option>
-                        @foreach ($users as $user)
-                            <option value="{{ $user->id }}" @selected((string) ($filters['user'] ?? '') === (string) $user->id)>{{ $user->name }}</option>
-                        @endforeach
-                    </select>
-                </div>
-                <div>
-                    <x-input-label for="from" value="Dari" />
-                    <x-text-input id="from" name="from" type="date" class="mt-1 block w-full" :value="$filters['from'] ?? ''" />
-                </div>
-                <div>
-                    <x-input-label for="to" value="Sampai" />
-                    <x-text-input id="to" name="to" type="date" class="mt-1 block w-full" :value="$filters['to'] ?? ''" />
-                </div>
-                <div class="flex gap-2 sm:col-span-2 lg:col-span-6">
-                    <x-primary-button>Filter</x-primary-button>
-                    <a href="{{ route('activity-logs.index') }}" class="px-2 py-2 text-xs font-semibold uppercase tracking-widest text-gray-600 hover:text-gray-900">Reset</a>
-                </div>
-                <x-input-error :messages="$errors->all()" class="sm:col-span-2 lg:col-span-6" />
-            </form>
+            </div>
+            <div>
+                <label for="log" class="form-label">Kategori</label>
+                <select id="log" name="log" class="form-input">
+                    <option value="">Semua</option>
+                    @foreach ($categories as $key => $label)
+                        <option value="{{ $key }}" @selected(($filters['log'] ?? '') === $key)>{{ $label }}</option>
+                    @endforeach
+                </select>
+            </div>
+            <div>
+                <label for="user" class="form-label">User</label>
+                <select id="user" name="user" class="form-input">
+                    <option value="">Semua user</option>
+                    @foreach ($users as $user)
+                        <option value="{{ $user->id }}" @selected((string) ($filters['user'] ?? '') === (string) $user->id)>{{ $user->name }}</option>
+                    @endforeach
+                </select>
+            </div>
+            <div>
+                <label for="from" class="form-label">Dari</label>
+                <input id="from" name="from" type="date" value="{{ $filters['from'] ?? '' }}" class="form-input">
+            </div>
+            <div>
+                <label for="to" class="form-label">Sampai</label>
+                <input id="to" name="to" type="date" value="{{ $filters['to'] ?? '' }}" class="form-input">
+            </div>
+            <div class="flex items-center justify-end gap-3 border-t border-slate-100 pt-3 sm:col-span-2 lg:col-span-6">
+                <a href="{{ route('activity-logs.index') }}" class="px-3 py-1.5 text-sm text-slate-500 hover:text-slate-900">Reset</a>
+                <button type="submit" class="btn-primary h-[38px]"><span class="material-symbols-outlined text-base" aria-hidden="true">filter_alt</span>Filter</button>
+            </div>
+        </form>
+        <x-input-error :messages="$errors->all()" class="mt-3" />
+    </section>
 
-            <div class="overflow-x-auto rounded-lg bg-white shadow-sm">
-                <table class="min-w-full divide-y divide-gray-200 text-sm">
-                    <thead class="bg-gray-50 text-left text-xs font-semibold uppercase tracking-wider text-gray-500">
+    {{-- Tabel --}}
+    <section class="card overflow-hidden">
+        <div class="overflow-x-auto">
+            <table class="table">
+                <thead><tr><th>Waktu</th><th>User</th><th>Kategori</th><th>Aktivitas</th></tr></thead>
+                <tbody>
+                    @forelse ($activities as $activity)
+                        @php
+                            $props = $activity->properties?->toArray() ?? [];
+                            $changes = $props['attributes'] ?? null;
+                            $old = $props['old'] ?? [];
+                            $extra = collect($props)->except(['attributes', 'old'])->all();
+                            [$pill, $dot] = $badge[$activity->log_name] ?? $badge['auth'];
+                            $causer = $activity->causer;
+                        @endphp
                         <tr>
-                            <th class="px-4 py-3">Waktu</th>
-                            <th class="px-4 py-3">User</th>
-                            <th class="px-4 py-3">Kategori</th>
-                            <th class="px-4 py-3">Aktivitas</th>
-                        </tr>
-                    </thead>
-                    <tbody class="divide-y divide-gray-100">
-                        @forelse ($activities as $activity)
-                            @php
-                                $props = $activity->properties?->toArray() ?? [];
-                                $changes = $props['attributes'] ?? null;
-                                $old = $props['old'] ?? [];
-                                $extra = collect($props)->except(['attributes', 'old'])->all();
-                            @endphp
-                            <tr class="align-top hover:bg-gray-50">
-                                <td class="whitespace-nowrap px-4 py-3 text-xs text-gray-600">{{ $activity->created_at->format('d/m/Y H:i:s') }}</td>
-                                <td class="whitespace-nowrap px-4 py-3">{{ $activity->causer?->name ?? 'Sistem / tamu' }}</td>
-                                <td class="whitespace-nowrap px-4 py-3">
-                                    <span class="rounded-full px-2.5 py-0.5 text-xs font-medium {{ $badge[$activity->log_name] ?? 'bg-gray-100 text-gray-700' }}">
-                                        {{ $categories[$activity->log_name] ?? $activity->log_name }}
-                                    </span>
-                                </td>
-                                <td class="px-4 py-3">
-                                    <div class="text-gray-900">
-                                        {{ $activity->description }}
-                                        @if ($activity->subject instanceof \App\Models\Booking)
-                                            <a href="{{ route('bookings.show', $activity->subject) }}" class="ms-1 text-xs text-indigo-600 hover:text-indigo-900">lihat</a>
-                                        @endif
-                                    </div>
+                            <td class="tabular whitespace-nowrap font-mono text-xs text-slate-500">{{ $activity->created_at->format('d/m/Y H:i:s') }}</td>
+                            <td class="whitespace-nowrap">
+                                <div class="flex items-center gap-2.5">
+                                    <span class="flex h-7 w-7 items-center justify-center rounded-full bg-slate-200 text-[11px] font-bold text-slate-600">{{ $causer ? $causer->initials() : '?' }}</span>
+                                    <span class="font-medium text-slate-900">{{ $causer?->name ?? 'Sistem / tamu' }}</span>
+                                </div>
+                            </td>
+                            <td class="whitespace-nowrap">
+                                <span class="inline-flex items-center gap-1.5 rounded-full px-2.5 py-0.5 text-xs font-medium {{ $pill }}">
+                                    <span class="h-1.5 w-1.5 rounded-full {{ $dot }}"></span>{{ $categories[$activity->log_name] ?? $activity->log_name }}
+                                </span>
+                            </td>
+                            <td>
+                                <div class="flex flex-wrap items-center justify-between gap-2">
+                                    <span class="text-slate-900">{{ $activity->description }}</span>
+                                    @if ($activity->subject instanceof \App\Models\Booking)
+                                        <a href="{{ route('bookings.show', $activity->subject) }}" class="flex items-center gap-1 text-xs font-medium text-brand-700 hover:underline">lihat<span class="material-symbols-outlined text-sm" aria-hidden="true">visibility</span></a>
+                                    @endif
+                                </div>
 
-                                    @if ($changes || $extra)
-                                        <details class="mt-1">
-                                            <summary class="cursor-pointer text-xs text-gray-500 hover:text-gray-700">Detail</summary>
-                                            <dl class="mt-2 grid grid-cols-1 gap-x-4 gap-y-1 rounded bg-gray-50 p-3 text-xs sm:grid-cols-2">
+                                @if ($changes || $extra)
+                                    <details class="group mt-1">
+                                        <summary class="flex cursor-pointer list-none items-center gap-1 text-xs text-slate-500 hover:text-slate-700">
+                                            <span class="material-symbols-outlined text-base transition-transform group-open:rotate-180" aria-hidden="true">expand_more</span>Detail
+                                        </summary>
+                                        <div class="mt-2 rounded-lg border border-slate-200 bg-slate-50 p-4 font-mono text-xs">
+                                            <div class="mb-2 flex items-center gap-1.5 font-sans text-[11px] font-semibold uppercase tracking-wider text-slate-500">
+                                                <span class="material-symbols-outlined text-sm" aria-hidden="true">code</span>Detail perubahan data
+                                            </div>
+                                            <dl class="grid grid-cols-1 gap-x-6 gap-y-1.5 md:grid-cols-2">
                                                 @foreach ($changes ?? [] as $field => $value)
-                                                    <div>
-                                                        <dt class="inline font-medium text-gray-600">{{ $field }}:</dt>
-                                                        <dd class="inline text-gray-800">
-                                                            @if (array_key_exists($field, $old))
-                                                                <span class="text-red-600 line-through">{{ $fmt($old[$field]) }}</span> &rarr;
-                                                            @endif
-                                                            {{ $fmt($value) }}
+                                                    <div class="flex items-center justify-between gap-3 border-b border-slate-200/70 py-1">
+                                                        <dt class="text-slate-500">{{ $field }}:</dt>
+                                                        <dd class="break-all text-right font-semibold text-slate-900">
+                                                            @if (array_key_exists($field, $old))<span class="font-normal text-red-600 line-through">{{ $fmt($old[$field]) }}</span> &rarr; @endif{{ $fmt($value) }}
                                                         </dd>
                                                     </div>
                                                 @endforeach
                                                 @foreach ($extra as $key => $value)
-                                                    <div>
-                                                        <dt class="inline font-medium text-gray-600">{{ $key }}:</dt>
-                                                        <dd class="inline break-all text-gray-800">{{ $fmt($value) }}</dd>
+                                                    <div class="flex items-center justify-between gap-3 border-b border-slate-200/70 py-1">
+                                                        <dt class="text-slate-500">{{ $key }}:</dt>
+                                                        <dd class="break-all text-right font-semibold text-slate-900">{{ $fmt($value) }}</dd>
                                                     </div>
                                                 @endforeach
                                             </dl>
-                                        </details>
-                                    @endif
-                                </td>
-                            </tr>
-                        @empty
-                            <tr><td colspan="4" class="px-4 py-8 text-center text-gray-500">Belum ada aktivitas yang cocok dengan filter.</td></tr>
-                        @endforelse
-                    </tbody>
-                </table>
-            </div>
-
-            <div>{{ $activities->links() }}</div>
+                                        </div>
+                                    </details>
+                                @endif
+                            </td>
+                        </tr>
+                    @empty
+                        <tr><td colspan="4" class="py-12 text-center text-slate-500">Belum ada aktivitas yang cocok dengan filter.</td></tr>
+                    @endforelse
+                </tbody>
+            </table>
         </div>
-    </div>
+        {{ $activities->links() }}
+    </section>
 </x-app-layout>

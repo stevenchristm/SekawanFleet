@@ -2,21 +2,33 @@
 
 namespace Database\Seeders;
 
+use App\Models\Location;
+use App\Models\Region;
 use Illuminate\Database\Seeder;
-use App\Models\{Region, Location};
 
+/**
+ * 1 kantor pusat, 1 kantor cabang, 6 site tambang nikel di beberapa region.
+ */
 class RegionLocationSeeder extends Seeder
 {
     public function run(): void
     {
-        $jakarta = Region::create(['name' => 'DKI Jakarta']);
-        $sulteng = Region::create(['name' => 'Sulawesi Tengah']);
+        $regions = collect(['DKI Jakarta', 'Sulawesi Tengah', 'Sulawesi Tenggara', 'Sulawesi Selatan', 'Maluku Utara'])
+            ->mapWithKeys(fn ($name) => [$name => Region::create(['name' => $name])]);
 
-        Location::create(['region_id' => $jakarta->id, 'name' => 'Kantor Pusat Jakarta', 'type' => 'head_office']);
-        Location::create(['region_id' => $sulteng->id, 'name' => 'Kantor Cabang Morowali', 'type' => 'branch_office']);
+        $locations = [
+            ['Kantor Pusat Jakarta', 'head_office', 'DKI Jakarta'],
+            ['Kantor Cabang Palu', 'branch_office', 'Sulawesi Tengah'],
+            ['Site Morowali', 'mine', 'Sulawesi Tengah'],
+            ['Site Kolaka', 'mine', 'Sulawesi Tenggara'],
+            ['Site Pomalaa', 'mine', 'Sulawesi Tenggara'],
+            ['Site Konawe', 'mine', 'Sulawesi Tenggara'],
+            ['Site Halmahera', 'mine', 'Maluku Utara'],
+            ['Site Sorowako', 'mine', 'Sulawesi Selatan'],
+        ];
 
-        foreach (range(1, 6) as $i) {
-            Location::create(['region_id' => $sulteng->id, 'name' => "Tambang Site {$i}", 'type' => 'mine']);
+        foreach ($locations as [$name, $type, $region]) {
+            Location::create(['region_id' => $regions[$region]->id, 'name' => $name, 'type' => $type]);
         }
     }
 }

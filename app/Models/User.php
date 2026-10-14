@@ -61,4 +61,11 @@ class User extends Authenticatable
     {
         return $this->role === UserRole::Approver;
     }
+
+    /** Inisial untuk avatar, mis. "Admin Pool" -> "AP". */
+    public function initials(): string
+    {
+        return str($this->name)->explode(' ')->filter()->take(2)
+            ->map(fn ($part) => mb_strtoupper(mb_substr($part, 0, 1)))->implode('');
+    }
 }

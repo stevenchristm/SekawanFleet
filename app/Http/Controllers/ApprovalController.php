@@ -20,10 +20,23 @@ class ApprovalController extends Controller
     public function index(Request $request): View
     {
         $tab = $request->query('tab') === 'history' ? 'history' : 'pending';
+        $term = trim((string) $request->query('q', ''));
 
         $base = BookingApproval::query()
             ->where('approver_id', $request->user()->id)
             ->with(['booking.vehicle', 'booking.driver', 'booking.approvals.approver']);
+
+        $counts = [
+            'pending' => (clone $base)->where('status', ApprovalStatus::Pending)->count(),
+            'history' => (clone $base)->whereIn('status', [ApprovalStatus::Approved, ApprovalStatus::Rejected])->count(),
+        ];
+
+        // Pencarian: kode booking, pemohon, tujuan, atau plat kendaraan
+        $base->when($term !== '', fn ($q) => $q->whereHas('booking', fn ($b) => $b
+            ->where('code', 'ilike', "%{$term}%")
+            ->orWhere('requester_name', 'ilike', "%{$term}%")
+            ->orWhere('destination', 'ilike', "%{$term}%")
+            ->orWhereHas('vehicle', fn ($v) => $v->where('plate_number', 'ilike', "%{$term}%"))));
 
         $approvals = $tab === 'pending'
             ? (clone $base)->where('status', ApprovalStatus::Pending)
@@ -36,8 +49,9 @@ class ApprovalController extends Controller
 
         return view('approvals.index', [
             'tab' => $tab,
+            'term' => $term,
             'approvals' => $approvals,
-            'pendingCount' => (clone $base)->where('status', ApprovalStatus::Pending)->count(),
+            'counts' => $counts,
         ]);
     }
 

@@ -1,67 +1,57 @@
 import Chart from 'chart.js/auto';
 
+// Palet sama dengan desain (Tailwind: emerald-500, amber-500, rose-500, blue-500, slate-400, brand-700)
 const COLORS = {
-    green: '#16a34a',
-    yellow: '#eab308',
-    red: '#dc2626',
-    blue: '#2563eb',
-    gray: '#9ca3af',
-    indigo: '#4f46e5',
-    teal: '#0d9488',
-    orange: '#ea580c',
+    green: '#10B981',
+    amber: '#F59E0B',
+    rose: '#F43F5E',
+    blue: '#3B82F6',
+    gray: '#94A3B8',
+    teal: '#0F766E',
 };
 
 // Warna sama dengan badge status (BookingStatus::color()).
 const STATUS_COLORS = {
-    pending: COLORS.yellow,
+    pending: COLORS.amber,
     approved: COLORS.green,
-    rejected: COLORS.red,
+    rejected: COLORS.rose,
     completed: COLORS.blue,
     cancelled: COLORS.gray,
 };
 
 const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
-Chart.defaults.font.family = 'Figtree, ui-sans-serif, system-ui, sans-serif';
+Chart.defaults.font.family = 'Inter, ui-sans-serif, system-ui, sans-serif';
+Chart.defaults.font.size = 11;
+Chart.defaults.color = '#64748B';
+Chart.defaults.borderColor = '#F1F5F9';
 Chart.defaults.maintainAspectRatio = false;
-Chart.defaults.animation = prefersReducedMotion ? false : Chart.defaults.animation;
-Chart.defaults.plugins.legend.position = 'bottom';
+if (prefersReducedMotion) Chart.defaults.animation = false;
+
+const tooltip = { backgroundColor: '#0F172A', padding: 10, cornerRadius: 8, titleFont: { weight: '600' } };
 
 function chart(id, config) {
     const canvas = document.getElementById(id);
     if (canvas) new Chart(canvas, config);
 }
 
-export function renderDashboard({ monthly, topVehicles, status, byType, fuel }) {
+export function renderDashboard({ monthly, status, fuel }) {
     chart('chart-monthly', {
         type: 'bar',
         data: {
             labels: monthly.labels,
             datasets: [
-                { label: 'Disetujui / Selesai', data: monthly.used, backgroundColor: COLORS.green },
-                { label: 'Menunggu', data: monthly.pending, backgroundColor: COLORS.yellow },
-                { label: 'Ditolak / Batal', data: monthly.rejected, backgroundColor: COLORS.red },
+                { label: 'Disetujui / Selesai', data: monthly.used, backgroundColor: COLORS.green, borderRadius: 4 },
+                { label: 'Menunggu', data: monthly.pending, backgroundColor: COLORS.amber, borderRadius: 4 },
+                { label: 'Ditolak / Batal', data: monthly.rejected, backgroundColor: COLORS.rose, borderRadius: 4 },
             ],
         },
         options: {
-            scales: { x: { stacked: true }, y: { stacked: true, beginAtZero: true, ticks: { precision: 0 } } },
-        },
-    });
-
-    chart('chart-top-vehicles', {
-        type: 'bar',
-        data: {
-            labels: topVehicles.labels,
-            datasets: [
-                { label: 'Jumlah perjalanan', data: topVehicles.trips, backgroundColor: COLORS.indigo, xAxisID: 'x' },
-                { label: 'Total jam', data: topVehicles.hours, backgroundColor: COLORS.teal, xAxisID: 'x2' },
-            ],
-        },
-        options: {
-            indexAxis: 'y',
+            maxBarThickness: 44,
+            plugins: { legend: { display: false }, tooltip: { ...tooltip, mode: 'index', intersect: false } },
             scales: {
-                x: { beginAtZero: true, position: 'bottom', ticks: { precision: 0 }, title: { display: true, text: 'Perjalanan' } },
-                x2: { beginAtZero: true, position: 'top', grid: { drawOnChartArea: false }, title: { display: true, text: 'Jam' } },
+                x: { stacked: true, grid: { display: false } },
+                y: { stacked: true, beginAtZero: true, ticks: { precision: 0 }, border: { display: false } },
             },
         },
     });
@@ -70,20 +60,9 @@ export function renderDashboard({ monthly, topVehicles, status, byType, fuel }) 
         type: 'doughnut',
         data: {
             labels: status.labels,
-            datasets: [{ data: status.data, backgroundColor: status.keys.map((k) => STATUS_COLORS[k]) }],
+            datasets: [{ data: status.data, backgroundColor: status.keys.map((k) => STATUS_COLORS[k]), borderWidth: 0 }],
         },
-    });
-
-    chart('chart-type', {
-        type: 'bar',
-        data: {
-            labels: byType.labels,
-            datasets: [
-                { label: 'Milik Perusahaan', data: byType.owned, backgroundColor: COLORS.blue },
-                { label: 'Sewa', data: byType.rented, backgroundColor: COLORS.orange },
-            ],
-        },
-        options: { scales: { y: { beginAtZero: true, ticks: { precision: 0 } } } },
+        options: { cutout: '72%', plugins: { legend: { display: false }, tooltip } },
     });
 
     chart('chart-fuel', {
@@ -91,14 +70,23 @@ export function renderDashboard({ monthly, topVehicles, status, byType, fuel }) 
         data: {
             labels: fuel.labels,
             datasets: [
-                { label: 'BBM (liter)', data: fuel.liters, borderColor: COLORS.orange, backgroundColor: COLORS.orange, yAxisID: 'y', tension: 0.3 },
-                { label: 'Jarak (km)', data: fuel.km, borderColor: COLORS.indigo, backgroundColor: COLORS.indigo, yAxisID: 'y2', tension: 0.3 },
+                {
+                    label: 'BBM (liter)', data: fuel.liters, yAxisID: 'y', tension: 0.35,
+                    borderColor: COLORS.teal, backgroundColor: '#FFFFFF', borderWidth: 3, pointRadius: 4, pointBorderWidth: 2.5,
+                },
+                {
+                    label: 'Jarak (km)', data: fuel.km, yAxisID: 'y2', tension: 0.35, borderDash: [5, 3],
+                    borderColor: COLORS.amber, backgroundColor: '#FFFFFF', borderWidth: 3, pointRadius: 4, pointBorderWidth: 2.5,
+                },
             ],
         },
         options: {
+            interaction: { mode: 'index', intersect: false },
+            plugins: { legend: { position: 'bottom', labels: { usePointStyle: true, boxWidth: 8 } }, tooltip },
             scales: {
-                y: { beginAtZero: true, title: { display: true, text: 'Liter' } },
-                y2: { beginAtZero: true, position: 'right', grid: { drawOnChartArea: false }, title: { display: true, text: 'Km' } },
+                x: { grid: { display: false } },
+                y: { beginAtZero: true, title: { display: true, text: 'Liter' }, border: { display: false } },
+                y2: { beginAtZero: true, position: 'right', grid: { drawOnChartArea: false }, title: { display: true, text: 'Km' }, border: { display: false } },
             },
         },
     });

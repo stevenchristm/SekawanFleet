@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Booking;
+use App\Models\Location;
 use App\Services\DashboardService;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
@@ -18,16 +19,26 @@ class DashboardController extends Controller
             $months = 6;
         }
 
+        $locations = Location::orderBy('id')->get(['id', 'name']);
+        $locationId = (int) $request->query('location') ?: null;
+        if ($locationId && ! $locations->contains('id', $locationId)) {
+            $locationId = null;
+        }
+
         $user = $request->user();
 
         return view('dashboard', [
             'months' => $months,
             'periods' => self::PERIODS,
-            'kpis' => $dashboard->kpis(),
+            'locations' => $locations,
+            'locationId' => $locationId,
+            'kpis' => $dashboard->kpis($locationId),
             'approverKpis' => $user->isApprover() ? $dashboard->approverKpis($user) : null,
-            'charts' => $dashboard->charts($months),
+            'charts' => $dashboard->charts($months, $locationId),
             'recent' => $user->isAdmin()
-                ? Booking::with(['vehicle', 'driver'])->latest()->limit(5)->get()
+                ? Booking::with(['vehicle.location', 'driver'])
+                    ->when($locationId, fn ($q, $id) => $q->whereHas('vehicle', fn ($v) => $v->where('location_id', $id)))
+                    ->latest()->limit(5)->get()
                 : collect(),
         ]);
     }

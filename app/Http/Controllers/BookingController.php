@@ -8,6 +8,7 @@ use App\Enums\VehicleStatus;
 use App\Http\Requests\StoreBookingRequest;
 use App\Models\Booking;
 use App\Models\Driver;
+use App\Models\Location;
 use App\Models\User;
 use App\Models\Vehicle;
 use App\Services\BookingService;
@@ -27,19 +28,27 @@ class BookingController extends Controller
         $filters = $request->validate([
             'status' => ['nullable', Rule::enum(BookingStatus::class)],
             'q' => ['nullable', 'string', 'max:100'],
+            'location_id' => ['nullable', 'integer', 'exists:locations,id'],
             'from' => ['nullable', 'date'],
             'to' => ['nullable', 'date', 'after_or_equal:from'],
         ]);
 
-        $bookings = Booking::query()
-            ->with(['vehicle', 'driver', 'currentApproval.approver'])
-            ->when($filters['status'] ?? null, fn ($q, $s) => $q->where('status', $s))
+        // Filter selain status: dipakai juga untuk menghitung jumlah per tab status.
+        $base = Booking::query()
             ->when($filters['q'] ?? null, fn ($q, $term) => $q->where(fn ($w) => $w
                 ->where('code', 'ilike', "%{$term}%")
                 ->orWhere('requester_name', 'ilike', "%{$term}%")
-                ->orWhere('destination', 'ilike', "%{$term}%")))
+                ->orWhere('destination', 'ilike', "%{$term}%")
+                ->orWhereHas('vehicle', fn ($v) => $v->where('plate_number', 'ilike', "%{$term}%"))))
+            ->when($filters['location_id'] ?? null, fn ($q, $id) => $q->whereHas('vehicle', fn ($v) => $v->where('location_id', $id)))
             ->when($filters['from'] ?? null, fn ($q, $d) => $q->where('start_at', '>=', $d))
-            ->when($filters['to'] ?? null, fn ($q, $d) => $q->where('start_at', '<', Carbon::parse($d)->addDay()))
+            ->when($filters['to'] ?? null, fn ($q, $d) => $q->where('start_at', '<', Carbon::parse($d)->addDay()));
+
+        $counts = (clone $base)->selectRaw('status, COUNT(*) AS total')->groupBy('status')->pluck('total', 'status');
+
+        $bookings = (clone $base)
+            ->with(['vehicle.location', 'driver', 'currentApproval.approver'])
+            ->when($filters['status'] ?? null, fn ($q, $s) => $q->where('status', $s))
             ->latest('start_at')
             ->paginate(15)
             ->withQueryString();
@@ -47,6 +56,8 @@ class BookingController extends Controller
         return view('bookings.index', [
             'bookings' => $bookings,
             'statuses' => BookingStatus::cases(),
+            'counts' => $counts,
+            'locations' => Location::orderBy('id')->get(['id', 'name']),
             'filters' => $filters,
         ]);
     }
