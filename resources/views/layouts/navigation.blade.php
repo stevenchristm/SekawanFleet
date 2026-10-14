@@ -19,6 +19,9 @@
                         <x-nav-link :href="route('bookings.index')" :active="request()->routeIs('bookings.*')">
                             Pemesanan
                         </x-nav-link>
+                        <x-nav-link :href="route('reports.index')" :active="request()->routeIs('reports.*')">
+                            Laporan
+                        </x-nav-link>
                     @endcan
                     @can('approver')
                         <x-nav-link :href="route('approvals.index')" :active="request()->routeIs('approvals.*')">
@@ -86,6 +89,9 @@
             @can('admin')
                 <x-responsive-nav-link :href="route('bookings.index')" :active="request()->routeIs('bookings.*')">
                     Pemesanan
+                </x-responsive-nav-link>
+                <x-responsive-nav-link :href="route('reports.index')" :active="request()->routeIs('reports.*')">
+                    Laporan
                 </x-responsive-nav-link>
             @endcan
             @can('approver')
