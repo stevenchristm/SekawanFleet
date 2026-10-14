@@ -73,6 +73,15 @@ return [
             'replace_placeholders' => true,
         ],
 
+        // Salinan activity log (DB) ke file harian: storage/logs/activity-YYYY-MM-DD.log
+        'activity' => [
+            'driver' => 'daily',
+            'path' => storage_path('logs/activity.log'),
+            'level' => 'info',
+            'max_files' => 30,
+            'replace_placeholders' => true,
+        ],
+
         'monthly' => [
             'driver' => 'monthly',
             'path' => storage_path('logs/laravel.log'),

@@ -12,10 +12,24 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasManyThrough;
+use Spatie\Activitylog\LogOptions;
+use Spatie\Activitylog\Traits\LogsActivity;
 
 class Vehicle extends Model
 {
-    use HasFactory;
+    use HasFactory, LogsActivity;
+
+    public function getActivitylogOptions(): LogOptions
+    {
+        return LogOptions::defaults()
+            ->logFillable()
+            ->logOnlyDirty()
+            ->dontSubmitEmptyLogs()
+            ->useLogName('fleet')
+            ->setDescriptionForEvent(fn (string $event) => "Kendaraan {$this->plate_number} ".match ($event) {
+                'created' => 'ditambahkan', 'updated' => 'diperbarui', 'deleted' => 'dihapus', default => $event,
+            });
+    }
 
     protected $fillable = [
         'location_id', 'rental_company_id', 'plate_number', 'brand_model',

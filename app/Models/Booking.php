@@ -72,6 +72,16 @@ class Booking extends Model
 
     public function getActivitylogOptions(): LogOptions
     {
-        return LogOptions::defaults()->logFillable()->logOnlyDirty()->useLogName('booking');
+        return LogOptions::defaults()
+            ->logFillable()
+            ->logOnlyDirty()
+            ->dontSubmitEmptyLogs()
+            ->useLogName('booking')
+            ->setDescriptionForEvent(fn (string $event) => match ($event) {
+                'created' => "Pemesanan {$this->code} dibuat",
+                'updated' => "Pemesanan {$this->code} diperbarui",
+                'deleted' => "Pemesanan {$this->code} dihapus",
+                default => "Pemesanan {$this->code}: {$event}",
+            });
     }
 }

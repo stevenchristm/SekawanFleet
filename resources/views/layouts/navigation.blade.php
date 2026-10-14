@@ -22,6 +22,9 @@
                         <x-nav-link :href="route('reports.index')" :active="request()->routeIs('reports.*')">
                             Laporan
                         </x-nav-link>
+                        <x-nav-link :href="route('activity-logs.index')" :active="request()->routeIs('activity-logs.*')">
+                            Log Aktivitas
+                        </x-nav-link>
                     @endcan
                     @can('approver')
                         <x-nav-link :href="route('approvals.index')" :active="request()->routeIs('approvals.*')">
@@ -92,6 +95,9 @@
                 </x-responsive-nav-link>
                 <x-responsive-nav-link :href="route('reports.index')" :active="request()->routeIs('reports.*')">
                     Laporan
+                </x-responsive-nav-link>
+                <x-responsive-nav-link :href="route('activity-logs.index')" :active="request()->routeIs('activity-logs.*')">
+                    Log Aktivitas
                 </x-responsive-nav-link>
             @endcan
             @can('approver')
