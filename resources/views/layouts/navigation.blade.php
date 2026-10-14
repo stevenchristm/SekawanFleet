@@ -23,6 +23,9 @@
                     @can('approver')
                         <x-nav-link :href="route('approvals.index')" :active="request()->routeIs('approvals.*')">
                             Persetujuan Saya
+                            @if ($pendingApprovals = Auth::user()->approvals()->where('status', 'pending')->count())
+                                <span class="ms-2 rounded-full bg-red-500 px-2 py-0.5 text-xs text-white" aria-label="{{ $pendingApprovals }} menunggu">{{ $pendingApprovals }}</span>
+                            @endif
                         </x-nav-link>
                     @endcan
                 </div>
@@ -88,6 +91,9 @@
             @can('approver')
                 <x-responsive-nav-link :href="route('approvals.index')" :active="request()->routeIs('approvals.*')">
                     Persetujuan Saya
+                    @if ($pendingApprovals ?? 0)
+                        <span class="ms-2 rounded-full bg-red-500 px-2 py-0.5 text-xs text-white">{{ $pendingApprovals }}</span>
+                    @endif
                 </x-responsive-nav-link>
             @endcan
         </div>

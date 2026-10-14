@@ -78,6 +78,15 @@
                         </ol>
                     </div>
 
+                    @php $myTurn = $booking->approvals->first(fn ($a) => $a->approver_id === auth()->id() && $a->status === \App\Enums\ApprovalStatus::Pending); @endphp
+                    @if ($myTurn && auth()->user()->can('act', $myTurn))
+                        <div class="rounded-lg border border-yellow-200 bg-yellow-50 p-4">
+                            <p class="mb-3 text-sm font-medium text-yellow-800">Pemesanan ini menunggu persetujuan Anda (level {{ $myTurn->level }}).</p>
+                            <x-input-error :messages="$errors->get('approval')" class="mb-2" />
+                            @include('approvals._actions', ['approval' => $myTurn->setRelation('booking', $booking)])
+                        </div>
+                    @endif
+
                     @can('cancel', $booking)
                         <form method="POST" action="{{ route('bookings.cancel', $booking) }}"
                               onsubmit="return confirm('Batalkan pemesanan {{ $booking->code }}?');">
