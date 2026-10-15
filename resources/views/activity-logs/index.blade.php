@@ -9,6 +9,7 @@
             'approval' => ['bg-emerald-100 text-emerald-800', 'bg-emerald-600'],
             'report' => ['bg-purple-100 text-purple-800', 'bg-purple-600'],
             'fleet' => ['bg-amber-100 text-amber-800', 'bg-amber-600'],
+            'service' => ['bg-cyan-100 text-cyan-800', 'bg-cyan-600'],
         ];
         $fmt = fn ($v) => is_array($v) ? json_encode($v, JSON_UNESCAPED_UNICODE) : (is_bool($v) ? ($v ? 'ya' : 'tidak') : ($v ?? '-'));
     @endphp
@@ -90,6 +91,8 @@
                                     <span class="text-slate-900">{{ $activity->description }}</span>
                                     @if ($activity->subject instanceof \App\Models\Booking)
                                         <a href="{{ route('bookings.show', $activity->subject) }}" class="flex items-center gap-1 text-xs font-medium text-brand-700 hover:underline">lihat<span class="material-symbols-outlined text-sm" aria-hidden="true">visibility</span></a>
+                                    @elseif ($activity->subject instanceof \App\Models\ServiceSchedule || $activity->subject instanceof \App\Models\Vehicle)
+                                        <a href="{{ route('vehicles.show', $activity->subject instanceof \App\Models\Vehicle ? $activity->subject : $activity->subject->vehicle_id) }}" class="flex items-center gap-1 text-xs font-medium text-brand-700 hover:underline">lihat<span class="material-symbols-outlined text-sm" aria-hidden="true">visibility</span></a>
                                     @endif
                                 </div>
 

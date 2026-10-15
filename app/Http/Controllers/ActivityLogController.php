@@ -18,6 +18,7 @@ class ActivityLogController extends Controller
         'approval' => 'Persetujuan',
         'report' => 'Laporan',
         'fleet' => 'Armada',
+        'service' => 'Servis',
     ];
 
     public function index(Request $request): View

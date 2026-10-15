@@ -4,6 +4,7 @@ namespace App\Providers;
 
 use App\Enums\ApprovalStatus;
 use App\Models\Location;
+use App\Models\ServiceSchedule;
 use App\Models\User;
 use Illuminate\Pagination\Paginator;
 use Illuminate\Support\Facades\Gate;
@@ -43,6 +44,9 @@ class AppServiceProvider extends ServiceProvider
             $view->with([
                 'pendingApprovals' => $user?->isApprover()
                     ? $user->approvals()->where('status', ApprovalStatus::Pending)->count()
+                    : 0,
+                'overdueServices' => $user?->isAdmin()
+                    ? ServiceSchedule::overdue()->distinct('vehicle_id')->count('vehicle_id')
                     : 0,
                 'locationSummary' => [
                     'total' => (int) $types->sum(),

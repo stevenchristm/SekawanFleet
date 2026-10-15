@@ -3,6 +3,7 @@
     $menu = array_filter([
         ['route' => 'dashboard', 'match' => 'dashboard', 'icon' => 'dashboard', 'label' => 'Dashboard', 'show' => true],
         ['route' => 'bookings.index', 'match' => 'bookings.*', 'icon' => 'calendar_today', 'label' => 'Pemesanan', 'show' => $user->isAdmin()],
+        ['route' => 'vehicles.index', 'match' => 'vehicles.*', 'icon' => 'local_shipping', 'label' => 'Kendaraan', 'show' => $user->isAdmin(), 'badge' => $overdueServices, 'badgeLabel' => 'servis terlambat'],
         ['route' => 'approvals.index', 'match' => 'approvals.*', 'icon' => 'fact_check', 'label' => 'Persetujuan Saya', 'show' => $user->isApprover(), 'badge' => $pendingApprovals],
         ['route' => 'reports.index', 'match' => 'reports.*', 'icon' => 'analytics', 'label' => 'Laporan', 'show' => $user->isAdmin()],
         ['route' => 'activity-logs.index', 'match' => 'activity-logs.*', 'icon' => 'history', 'label' => 'Log Aktivitas', 'show' => $user->isAdmin()],
@@ -49,7 +50,7 @@
                     <span @class(['material-symbols-outlined text-[20px]', 'icon-fill' => $active]) aria-hidden="true">{{ $item['icon'] }}</span>
                     <span class="flex-1">{{ $item['label'] }}</span>
                     @if (! empty($item['badge']))
-                        <span class="rounded-full bg-red-500 px-1.5 py-0.5 text-[11px] font-bold leading-none text-white" aria-label="{{ $item['badge'] }} menunggu">{{ $item['badge'] }}</span>
+                        <span class="rounded-full bg-red-500 px-1.5 py-0.5 text-[11px] font-bold leading-none text-white" aria-label="{{ $item['badge'] }} {{ $item['badgeLabel'] ?? 'menunggu' }}">{{ $item['badge'] }}</span>
                     @endif
                 </a>
             @endforeach

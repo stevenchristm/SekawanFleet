@@ -15,6 +15,7 @@ class DatabaseSeeder extends Seeder
             UserSeeder::class,
             FleetSeeder::class,
             BookingSeeder::class,
+            ServiceScheduleSeeder::class,
         ]);
 
         activity()->enableLogging();

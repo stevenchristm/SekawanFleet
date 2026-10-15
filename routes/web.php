@@ -6,6 +6,8 @@ use App\Http\Controllers\BookingController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\ReportController;
+use App\Http\Controllers\ServiceScheduleController;
+use App\Http\Controllers\VehicleController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', fn () => redirect()->route('dashboard'));
@@ -32,6 +34,13 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::get('/reports/export', [ReportController::class, 'export'])->name('reports.export');
 
         Route::get('/activity-logs', [ActivityLogController::class, 'index'])->name('activity-logs.index');
+
+        // Kendaraan: monitoring pemakaian, BBM, dan jadwal servis
+        Route::get('/vehicles', [VehicleController::class, 'index'])->name('vehicles.index');
+        Route::get('/vehicles/{vehicle}', [VehicleController::class, 'show'])->whereNumber('vehicle')->name('vehicles.show');
+        Route::post('/vehicles/{vehicle}/services', [ServiceScheduleController::class, 'store'])->name('services.store');
+        Route::patch('/services/{service}/complete', [ServiceScheduleController::class, 'complete'])->name('services.complete');
+        Route::patch('/services/{service}/cancel', [ServiceScheduleController::class, 'cancel'])->name('services.cancel');
     });
 
     // Approver: persetujuan berjenjang

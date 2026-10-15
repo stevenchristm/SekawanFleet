@@ -30,7 +30,7 @@
                 Dibuat oleh {{ $booking->creator->name }} pada <strong class="font-medium text-slate-900">{{ $booking->created_at->format('d/m/Y H:i') }}</strong>
             </p>
         </div>
-        <x-status-badge :status="$booking->status" size="lg" />
+        <x-status-badge :status="$booking->status" size="lg" class="self-start md:self-center" />
     </div>
 
     <div class="grid grid-cols-1 items-start gap-6 lg:grid-cols-12">

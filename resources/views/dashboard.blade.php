@@ -66,6 +66,49 @@
         </section>
     @endif
 
+    {{-- Panel servis (admin) --}}
+    @if ($serviceKpis)
+        @php $alert = $serviceKpis['overdue'] > 0; @endphp
+        <section aria-labelledby="service-panel" @class([
+            'rounded-xl border p-5',
+            'border-red-200 bg-red-50' => $alert,
+            'border-slate-200 bg-white' => ! $alert,
+        ])>
+            <div class="flex flex-wrap items-center justify-between gap-3">
+                <div class="flex items-center gap-2">
+                    <span @class(['material-symbols-outlined', 'text-red-600' => $alert, 'text-brand-700' => ! $alert]) aria-hidden="true">build_circle</span>
+                    <h3 id="service-panel" class="font-semibold text-slate-900">Jadwal Servis Kendaraan</h3>
+                </div>
+                <a href="{{ route('vehicles.index', $serviceKpis['overdue'] ? ['service' => 'overdue'] : ($serviceKpis['soon'] ? ['service' => 'soon'] : [])) }}" class="btn-sm btn-secondary">
+                    Lihat kendaraan <span class="material-symbols-outlined text-base" aria-hidden="true">arrow_forward</span>
+                </a>
+            </div>
+            <div class="mt-4 grid grid-cols-1 gap-4 md:grid-cols-[minmax(0,1fr)_minmax(0,1.6fr)]">
+                <dl class="grid grid-cols-3 gap-4 text-center">
+                    <div><dt class="text-xs text-slate-600">Terlambat</dt><dd @class(['tabular font-mono text-2xl font-bold', 'text-red-700' => $alert, 'text-slate-900' => ! $alert])>{{ $serviceKpis['overdue'] }}</dd></div>
+                    <div><dt class="text-xs text-slate-600">7 hari ke depan</dt><dd class="tabular font-mono text-2xl font-bold text-amber-700">{{ $serviceKpis['soon'] }}</dd></div>
+                    <div><dt class="text-xs text-slate-600">Selesai bulan ini</dt><dd class="tabular font-mono text-2xl font-bold text-emerald-700">{{ $serviceKpis['completed_this_month'] }}</dd></div>
+                </dl>
+                <ul class="space-y-1.5">
+                    @forelse ($serviceKpis['upcoming'] as $service)
+                        <li>
+                            <a href="{{ route('vehicles.show', $service->vehicle_id) }}" class="flex flex-wrap items-center justify-between gap-2 rounded-lg border border-slate-200 bg-white px-3 py-2 text-xs hover:border-slate-300">
+                                <span class="flex items-center gap-2">
+                                    <span class="rounded bg-sidebar px-1.5 py-0.5 font-mono text-[11px] font-bold text-white">{{ $service->vehicle->plate_number }}</span>
+                                    <span class="font-medium text-slate-800">{{ $service->type->label() }}</span>
+                                    <span class="tabular font-mono text-slate-500">{{ $service->scheduled_date->format('d/m') }}</span>
+                                </span>
+                                <x-service-due :service="$service" />
+                            </a>
+                        </li>
+                    @empty
+                        <li class="flex h-full items-center rounded-lg border border-dashed border-slate-300 px-3 py-3 text-xs text-slate-500">Tidak ada servis dalam 7 hari ke depan.</li>
+                    @endforelse
+                </ul>
+            </div>
+        </section>
+    @endif
+
     {{-- KPI --}}
     <section aria-label="Ringkasan" class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
         @php

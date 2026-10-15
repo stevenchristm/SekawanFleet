@@ -34,11 +34,18 @@ Dibuat untuk Technical Test Fullstack Developer (Intern).
 | Poin tambahan | Implementasi |
 |---|---|
 | a. Physical data model | [Physical Data Model](#physical-data-model) |
-| b. Activity diagram | [Activity Diagram](#activity-diagram), 8 diagram per aktor ditambah siklus status |
-| c. Log aplikasi pada tiap proses | Login/logout, pemesanan, persetujuan, pembatalan, pengembalian, export laporan, dan perubahan data armada. Tersimpan di database dan file harian, dan bisa dilihat di menu **Log Aktivitas** |
+| b. Activity diagram | [Activity Diagram](#activity-diagram), 10 diagram per aktor ditambah siklus status |
+| c. Log aplikasi pada tiap proses | Login/logout, pemesanan, persetujuan, pembatalan, pengembalian, jadwal servis, export laporan, dan perubahan data armada. Tersimpan di database dan file harian, dan bisa dilihat di menu **Log Aktivitas** |
 | d. UI/UX baik & responsive | Layout sidebar yang berubah menjadi drawer di layar < 1024 px, badge status, timeline persetujuan, dan pesan validasi berbahasa Indonesia |
 
-Fitur tambahan: pencatatan pengembalian kendaraan (odometer, BBM, catatan kondisi) yang menutup alur pemesanan sampai status `completed`. Data inilah yang dipakai grafik BBM & jarak tempuh.
+Fitur tambahan:
+
+- **Pengembalian kendaraan**: pencatatan odometer, BBM, dan catatan kondisi yang menutup alur pemesanan sampai status `completed`. Data ini dipakai grafik BBM & jarak tempuh.
+- **Monitoring kendaraan & jadwal servis**, sesuai deskripsi soal ("konsumsi BBM, jadwal service dan riwayat pemakaian kendaraan"):
+  - Menu **Kendaraan** berisi daftar armada dengan odometer terakhir, jumlah perjalanan, jarak, BBM (km/L), dan servis berikutnya.
+  - Halaman detail tiap kendaraan berisi pemakaian 6 bulan, riwayat pemakaian, pemesanan mendatang, serta jadwal & riwayat servis.
+  - Admin bisa menjadwalkan servis (berkala, perbaikan, inspeksi/KIR), menandainya selesai (odometer, biaya, bengkel), atau membatalkannya.
+  - Servis yang terlambat atau jatuh tempo dalam 7 hari ditandai di daftar kendaraan, badge menu, dan dashboard admin.
 
 ## Teknologi & Versi
 
@@ -128,6 +135,8 @@ Seeder membuat 8 lokasi di 5 region (Kantor Pusat Jakarta, Kantor Cabang Palu, d
 
 Beberapa pemesanan berstatus *Disetujui* dengan waktu mulai yang sudah lewat, sehingga fitur **Catat Pengembalian** bisa langsung dicoba.
 
+Setiap kendaraan juga punya riwayat servis selesai selama 6 bulan terakhir dan satu servis terjadwal. Sebagian sudah terlambat, sebagian jatuh tempo minggu ini, dan sisanya masih lama, sehingga semua penanda servis langsung terlihat.
+
 ## Panduan Penggunaan
 
 ### Admin (`admin@nikel.test`)
@@ -142,7 +151,11 @@ Beberapa pemesanan berstatus *Disetujui* dengan waktu mulai yang sudah lewat, se
 4. **Membatalkan**: di halaman detail, klik **Batalkan Pemesanan**. Tombol ini hanya tersedia untuk status *Menunggu* atau *Disetujui*.
 5. **Mencatat pengembalian**: setelah kendaraan kembali, buka detail pemesanan yang *Disetujui*, klik **Catat Pengembalian**, lalu isi odometer akhir, BBM (liter), waktu kembali, dan catatan. Odometer awal terisi otomatis dari pengembalian terakhir kendaraan tersebut. Status berubah menjadi *Selesai*.
 6. **Laporan**: menu **Laporan** → atur periode dan filter → **Tampilkan** → **Export Excel**.
-7. **Log Aktivitas**: menu **Log Aktivitas**, bisa disaring per kategori, pengguna, tanggal, atau kata kunci.
+7. **Kendaraan & jadwal servis**: menu **Kendaraan** menampilkan semua armada. Klik kartu *Servis terlambat* atau *Servis 7 hari ke depan* untuk menyaring. Di halaman detail kendaraan:
+   1. **Jadwalkan Servis**: pilih jenis (berkala, perbaikan, inspeksi/KIR), tanggal, dan bisa juga target odometer, bengkel, serta rencana pekerjaan.
+   2. **Tandai Selesai**: isi tanggal selesai, odometer saat servis (tidak boleh lebih kecil dari odometer terakhir), biaya, dan catatan pekerjaan. Hasilnya pindah ke *Riwayat Servis*.
+   3. Ikon kalender silang membatalkan jadwal servis.
+8. **Log Aktivitas**: menu **Log Aktivitas**, bisa disaring per kategori, pengguna, tanggal, atau kata kunci.
 
 ### Approver (`supervisor@nikel.test`, `manager@nikel.test`, `kasite@nikel.test`, `gm@nikel.test`)
 
@@ -179,6 +192,10 @@ Approver yang dipilih di data demo diacak. Kalau inbox satu approver kosong, cob
 |---|
 | ![Log aktivitas](docs/images/screenshots/08-log-aktivitas.png) |
 
+| Kendaraan (monitoring & servis berikutnya) | Detail Kendaraan (pemakaian & jadwal servis) |
+|---|---|
+| ![Daftar kendaraan](docs/images/screenshots/12-kendaraan.png) | ![Detail kendaraan](docs/images/screenshots/13-detail-kendaraan.png) |
+
 ### Approver
 
 | Dashboard | Persetujuan Saya | Detail & Keputusan |
@@ -193,7 +210,9 @@ Approver yang dipilih di data demo diacak. Kalau inbox satu approver kosong, cob
 - Hanya kendaraan berstatus *tersedia* dan driver aktif yang bisa dipilih.
 - Pembatalan hanya untuk status *Menunggu* atau *Disetujui*.
 - Pengembalian hanya untuk status *Disetujui* yang waktu mulainya sudah tiba. Odometer akhir harus ≥ odometer awal, dan waktu kembali harus di antara waktu mulai dan saat ini.
-- Proses persetujuan, pembatalan, dan pengembalian berjalan di dalam transaksi dengan row lock, sehingga aksi yang bersamaan tidak menghasilkan data ganda.
+- **Hari servis memblokir pemesanan**: kendaraan tidak bisa dipesan pada rentang waktu yang mencakup tanggal servis terjadwal. Sebaliknya, servis tidak bisa dijadwalkan di hari kendaraan sudah dipesan (*Menunggu*/*Disetujui*), dan satu kendaraan hanya boleh punya satu servis terjadwal per tanggal.
+- Servis ditandai **terlambat** kalau tanggalnya sudah lewat tapi belum diselesaikan, dan **segera** kalau jatuh tempo dalam 7 hari. Odometer saat servis tidak boleh lebih kecil dari odometer terakhir yang tercatat.
+- Proses persetujuan, pembatalan, pengembalian, dan jadwal servis berjalan di dalam transaksi dengan row lock, sehingga aksi yang bersamaan tidak menghasilkan data ganda.
 
 Siklus status pemesanan:
 
@@ -208,6 +227,7 @@ Siklus status pemesanan:
 | `bookings` | Pemesanan: kode `BK-YYYYMM-NNNN`, kendaraan, driver, admin pembuat, pemohon, jadwal, status, level aktif |
 | `booking_approvals` | Persetujuan per level: approver, level, status (`waiting`, `pending`, `approved`, `rejected`, `skipped`), catatan, waktu keputusan |
 | `vehicle_usages` | Pengembalian/pemakaian: odometer awal & akhir, BBM, catatan, waktu kembali (maksimal 1 per pemesanan) |
+| `service_schedules` | Jadwal servis: kendaraan, jenis (`routine`, `repair`, `inspection`), tanggal, target odometer, bengkel, status (`scheduled`, `completed`, `cancelled`), lalu hasilnya: tanggal selesai, odometer, biaya, catatan |
 | `vehicles` | Kendaraan: plat, merek/model, jenis (orang/barang), kepemilikan (milik/sewa), lokasi, perusahaan rental, status |
 | `drivers` | Driver: nama, nomor SIM, lokasi, status aktif |
 | `users` | Admin & approver: role, jabatan, lokasi |
@@ -221,6 +241,7 @@ Constraint penting di database:
 - `UNIQUE (booking_id, level)` dan `UNIQUE (booking_id, approver_id)`: satu approver per level, dan approver tidak boleh dobel dalam satu pemesanan.
 - `CHECK (end_at > start_at)`, `CHECK (end_odometer >= start_odometer)`, serta CHECK untuk setiap kolom status/jenis/role.
 - `CHECK` kendaraan sewa wajib memiliki `rental_company_id`. Foreign key data master memakai `ON DELETE RESTRICT`.
+- `UNIQUE (vehicle_id, scheduled_date) WHERE status = 'scheduled'`: tidak ada dua servis terjadwal untuk kendaraan yang sama di tanggal yang sama. `CHECK` memastikan data penyelesaian (tanggal & penyelesai) terisi jika dan hanya jika status `completed`.
 
 ## Activity Diagram
 
@@ -256,6 +277,14 @@ Constraint penting di database:
 
 ![Activity diagram Log Aktivitas](docs/images/activity/08-log-aktivitas.png)
 
+**Monitoring Kendaraan & Menjadwalkan Servis**
+
+![Activity diagram Jadwal Servis](docs/images/activity/09-jadwal-servis.png)
+
+**Menyelesaikan / Membatalkan Servis**
+
+![Activity diagram Penyelesaian Servis](docs/images/activity/10-penyelesaian-servis.png)
+
 ### Approver
 
 **Persetujuan Pemesanan Berjenjang**
@@ -273,6 +302,7 @@ Setiap proses dicatat dengan [spatie/laravel-activitylog](https://github.com/spa
 | Menyetujui / menolak | `approval` | Menyetujui pemesanan BK-202610-0012 (level 1) |
 | Membatalkan | `booking` | Pemesanan BK-202610-0012 dibatalkan |
 | Mencatat pengembalian | `booking` | Pengembalian kendaraan BK-202610-0012 dicatat (130 km) |
+| Menjadwalkan / menyelesaikan / membatalkan servis | `service` | Servis Berkala DN 1001 AB dijadwalkan 20/10/2026 |
 | Export laporan | `report` | Export laporan pemesanan ke Excel |
 | Perubahan kendaraan / driver | `fleet` | Kendaraan DN 1001 AB diperbarui |
 
@@ -286,10 +316,10 @@ Test memakai PostgreSQL (database `sekawan_fleet_test`), karena migration memaka
 php artisan test
 ```
 
-Hasil: **72 test, 286 assertion, semua lulus**. Cakupannya meliputi hak akses per role, validasi pemesanan dan bentrok jadwal, alur persetujuan berjenjang (urutan level, penolakan, keputusan yang tidak bisa diproses dua kali), pembatalan, pengembalian kendaraan, dashboard, laporan & export Excel, serta log aktivitas.
+Hasil: **79 test, 350 assertion, semua lulus**. Cakupannya meliputi hak akses per role, validasi pemesanan dan bentrok jadwal, alur persetujuan berjenjang (urutan level, penolakan, keputusan yang tidak bisa diproses dua kali), pembatalan, pengembalian kendaraan, jadwal servis (bentrok dengan pemesanan, penyelesaian, pembatalan, halaman kendaraan), dashboard, laporan & export Excel, serta log aktivitas.
 
 ## Batasan
 
 - Data master (kendaraan, driver, lokasi, akun) dikelola lewat seeder. Belum ada halaman CRUD.
-- Jadwal servis kendaraan belum diimplementasikan. Monitoring BBM dan riwayat pemakaian tersedia lewat pencatatan pengembalian.
+- Status kendaraan (*Tersedia*/*Perawatan*/*Tidak Aktif*) tidak berubah otomatis mengikuti jadwal servis. Pemblokiran pemesanan di hari servis dilakukan lewat jadwal servis itu sendiri.
 - Notifikasi email belum dikonfigurasi, sehingga fitur reset password tidak ditampilkan. Approver melihat pemesanan baru lewat badge di menu **Persetujuan Saya**.

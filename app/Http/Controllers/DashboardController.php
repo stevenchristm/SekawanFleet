@@ -34,6 +34,7 @@ class DashboardController extends Controller
             'locationId' => $locationId,
             'kpis' => $dashboard->kpis($locationId),
             'approverKpis' => $user->isApprover() ? $dashboard->approverKpis($user) : null,
+            'serviceKpis' => $user->isAdmin() ? $dashboard->serviceKpis($locationId) : null,
             'charts' => $dashboard->charts($months, $locationId),
             'recent' => $user->isAdmin()
                 ? Booking::with(['vehicle.location', 'driver'])

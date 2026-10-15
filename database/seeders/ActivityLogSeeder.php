@@ -3,7 +3,9 @@
 namespace Database\Seeders;
 
 use App\Models\Booking;
+use App\Models\ServiceSchedule;
 use App\Models\User;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Carbon;
 use Spatie\Activitylog\Models\Activity;
@@ -19,6 +21,9 @@ use Spatie\Activitylog\Models\Activity;
 class ActivityLogSeeder extends Seeder
 {
     private const CONTEXT = ['ip' => '127.0.0.1', 'user_agent' => 'Seeder (data demo)'];
+
+    /** @var array<int, array<string, mixed>> */
+    private array $entries = [];
 
     public function run(): void
     {
@@ -77,9 +82,39 @@ class ActivityLogSeeder extends Seeder
                 }
             }
 
+            // Jadwal servis: dijadwalkan & diselesaikan dalam 14 hari terakhir.
+            $services = ServiceSchedule::with('vehicle')
+                ->where(fn ($q) => $q->where('created_at', '>=', $since)->orWhere('completed_date', '>=', $since->toDateString()))
+                ->get();
+
+            foreach ($services as $service) {
+                $plate = $service->vehicle->plate_number;
+                if ($service->created_at->gte($since)) {
+                    $this->log('service', 'scheduled', "{$service->type->label()} {$plate} dijadwalkan {$service->scheduled_date->format('d/m/Y')}",
+                        $admin, $service, $service->created_at, array_filter([
+                            'vehicle' => $plate,
+                            'type' => $service->type->value,
+                            'scheduled_date' => $service->scheduled_date->toDateString(),
+                            'odometer_due' => $service->odometer_due,
+                        ]));
+                }
+                if ($service->completed_date?->gte($since->copy()->startOfDay())) {
+                    $this->log('service', 'completed', "{$service->type->label()} {$plate} selesai dikerjakan",
+                        $admin, $service, $service->completed_date->copy()->setTime(15, 0), array_filter([
+                            'vehicle' => $plate,
+                            'completed_date' => $service->completed_date->toDateString(),
+                            'odometer_at_service' => $service->odometer_at_service,
+                            'cost' => $service->cost,
+                            'workshop' => $service->workshop,
+                        ]));
+                }
+            }
+
             // Satu percobaan login gagal sebagai contoh (password tidak pernah dicatat).
             $this->log('auth', 'login_failed', 'Login gagal', null, null, now()->subHours(6),
                 self::CONTEXT + ['email' => 'admin@nikel.tes']);
+
+            $this->flush();
         });
     }
 
@@ -88,7 +123,25 @@ class ActivityLogSeeder extends Seeder
         $this->log('auth', $event, $description, $user, null, $at, self::CONTEXT);
     }
 
-    private function log(string $logName, string $event, string $description, ?User $causer, ?Booking $subject, Carbon $at, array $properties = []): void
+    private function log(string $logName, string $event, string $description, ?User $causer, ?Model $subject, Carbon $at, array $properties = []): void
+    {
+        // Ditampung dulu; ditulis berurutan waktu di flush() supaya urutan id = urutan kejadian.
+        $this->entries[] = compact('logName', 'event', 'description', 'causer', 'subject', 'at', 'properties');
+    }
+
+    private function flush(): void
+    {
+        usort($this->entries, fn ($a, $b) => $a['at'] <=> $b['at']);
+
+        foreach ($this->entries as ['logName' => $logName, 'event' => $event, 'description' => $description,
+            'causer' => $causer, 'subject' => $subject, 'at' => $at, 'properties' => $properties]) {
+            $this->write($logName, $event, $description, $causer, $subject, $at, $properties);
+        }
+
+        $this->entries = [];
+    }
+
+    private function write(string $logName, string $event, string $description, ?User $causer, ?Model $subject, Carbon $at, array $properties): void
     {
         $logger = activity($logName)->event($event)->withProperties($properties)->createdAt($at);
 

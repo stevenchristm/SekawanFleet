@@ -7,6 +7,7 @@ use App\Enums\BookingStatus;
 use App\Models\Booking;
 use App\Models\BookingApproval;
 use App\Models\Driver;
+use App\Models\ServiceSchedule;
 use App\Models\User;
 use App\Models\Vehicle;
 use App\Models\VehicleUsage;
@@ -183,6 +184,16 @@ class BookingService
         if ($clash = $overlapping()->where('driver_id', $driverId)->first()) {
             $errors['driver_id'] = "Driver sudah bertugas ({$clash->code}) pada "
                 .$clash->start_at->format('d/m/Y H:i').' - '.$clash->end_at->format('d/m/Y H:i').'.';
+        }
+
+        // Hari servis terjadwal: kendaraan berada di bengkel, tidak bisa dipesan.
+        if (! isset($errors['vehicle_id']) && $service = ServiceSchedule::scheduled()
+            ->where('vehicle_id', $vehicleId)
+            ->whereBetween('scheduled_date', [$start->toDateString(), $end->toDateString()])
+            ->orderBy('scheduled_date')
+            ->first()) {
+            $errors['vehicle_id'] = "Kendaraan dijadwalkan {$service->type->label()} pada "
+                .$service->scheduled_date->format('d/m/Y').'. Pilih kendaraan atau tanggal lain.';
         }
 
         if ($errors) {

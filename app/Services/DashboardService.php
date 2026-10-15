@@ -4,9 +4,11 @@ namespace App\Services;
 
 use App\Enums\ApprovalStatus;
 use App\Enums\BookingStatus;
+use App\Enums\ServiceStatus;
 use App\Enums\VehicleStatus;
 use App\Models\Booking;
 use App\Models\BookingApproval;
+use App\Models\ServiceSchedule;
 use App\Models\User;
 use App\Models\Vehicle;
 use Illuminate\Database\Eloquent\Builder;
@@ -50,6 +52,29 @@ class DashboardService
             'in_use_percent' => $total > 0 ? (int) round($inUse / $total * 100) : 0,
             'vehicles_available' => (clone $vehicles)->where('status', VehicleStatus::Available)->count(),
             'vehicles_total' => $total,
+        ];
+    }
+
+    /**
+     * Ringkasan jadwal servis untuk admin: terlambat, 7 hari ke depan, selesai bulan ini,
+     * plus daftar servis terdekat yang perlu diperhatikan.
+     */
+    public function serviceKpis(?int $locationId = null): array
+    {
+        $scope = fn () => ServiceSchedule::query()
+            ->when($locationId, fn ($q, $id) => $q->whereHas('vehicle', fn ($v) => $v->where('location_id', $id)));
+
+        return [
+            'overdue' => $scope()->overdue()->count(),
+            'soon' => $scope()->dueSoon()->count(),
+            'completed_this_month' => $scope()->where('status', ServiceStatus::Completed)
+                ->where('completed_date', '>=', now()->startOfMonth()->toDateString())->count(),
+            'upcoming' => $scope()->scheduled()
+                ->where('scheduled_date', '<=', today()->addDays(ServiceSchedule::SOON_DAYS))
+                ->with('vehicle')
+                ->orderBy('scheduled_date')
+                ->limit(4)
+                ->get(),
         ];
     }
 
