@@ -77,7 +77,7 @@ Semua akun memakai password **`password`**.
 
 Aplikasi hanya memiliki **2 role**: admin dan approver. Akun approver dibuat lebih dari satu karena setiap level persetujuan harus disetujui orang yang berbeda. Satu pemesanan butuh minimal 2 approver, dan dengan 4 approver bisa diperagakan persetujuan sampai 4 level. Jabatan hanya label, dan approver mana pun bisa dipilih di level mana pun.
 
-Registrasi publik dinonaktifkan. Akun dibuat lewat seeder.
+Registrasi publik dinonaktifkan. Akun dibuat lewat seeder, dan pengguna tidak bisa menghapus akunnya sendiri karena akun terhubung ke riwayat pemesanan dan persetujuan.
 
 ## Instalasi
 
@@ -324,7 +324,7 @@ Test memakai PostgreSQL (database `sekawan_fleet_test`), karena migration memaka
 php artisan test
 ```
 
-Hasil: **79 test, 350 assertion, semua lulus**. Cakupannya meliputi hak akses per role, validasi pemesanan dan bentrok jadwal, alur persetujuan berjenjang (urutan level, penolakan, keputusan yang tidak bisa diproses dua kali), pembatalan, pengembalian kendaraan, jadwal servis (bentrok dengan pemesanan, penyelesaian, pembatalan, halaman kendaraan), dashboard, laporan & export Excel, serta log aktivitas.
+Hasil: **78 test, 348 assertion, semua lulus**. Cakupannya meliputi hak akses per role, validasi pemesanan dan bentrok jadwal, alur persetujuan berjenjang (urutan level, penolakan, keputusan yang tidak bisa diproses dua kali), pembatalan, pengembalian kendaraan, jadwal servis (bentrok dengan pemesanan, penyelesaian, pembatalan, halaman kendaraan), dashboard, laporan & export Excel, serta log aktivitas.
 
 ## Batasan
 
