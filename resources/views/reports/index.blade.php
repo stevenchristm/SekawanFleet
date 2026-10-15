@@ -22,7 +22,7 @@
 
     {{-- Filter --}}
     <section class="card p-5">
-        <form method="GET" class="grid grid-cols-1 items-end gap-4 md:grid-cols-2 lg:grid-cols-6">
+        <form method="GET" class="grid grid-cols-1 items-end gap-4 md:grid-cols-2 lg:grid-cols-[repeat(5,minmax(0,1fr))_auto]">
             <div>
                 <label for="from" class="form-label">Dari tanggal</label>
                 <input id="from" name="from" type="date" value="{{ $filters['from'] }}" required class="form-input">
@@ -114,7 +114,7 @@
         <div class="overflow-x-auto">
             <table class="table">
                 <thead>
-                    <tr><th>Kode</th><th>Pemohon / Tujuan</th><th>Kendaraan</th><th>Driver</th><th>Jadwal</th><th>Persetujuan</th><th class="text-center">Status</th><th class="text-right">Aksi</th></tr>
+                    <tr><th>Kode</th><th>Pemohon / Tujuan</th><th>Kendaraan / Driver</th><th>Jadwal</th><th>Persetujuan</th><th class="text-center">Status</th><th class="text-right">Aksi</th></tr>
                 </thead>
                 <tbody class="text-xs">
                     @forelse ($bookings as $booking)
@@ -127,8 +127,8 @@
                             <td class="whitespace-nowrap">
                                 <div class="font-mono font-bold text-slate-900">{{ $booking->vehicle->plate_number }}</div>
                                 <div class="mt-0.5 text-[11px] text-slate-500">{{ $booking->vehicle->type->label() }} &middot; {{ $booking->vehicle->ownership->label() }}</div>
+                                <div class="mt-0.5 text-[11px] text-slate-700">Driver: <span class="font-medium">{{ $booking->driver->name }}</span></div>
                             </td>
-                            <td class="whitespace-nowrap font-medium text-slate-900">{{ $booking->driver->name }}</td>
                             <td class="tabular whitespace-nowrap">
                                 <div class="font-medium text-slate-900">{{ $booking->start_at->format('d/m/Y H:i') }}</div>
                                 <div class="text-[11px] text-slate-500">s/d {{ $booking->end_at->format('d/m/Y H:i') }}</div>
@@ -149,11 +149,11 @@
                             </td>
                             <td class="whitespace-nowrap text-center"><x-status-badge :status="$booking->status" /></td>
                             <td class="whitespace-nowrap text-right">
-                                <a href="{{ route('bookings.show', $booking) }}" class="btn-sm btn-secondary"><span class="material-symbols-outlined text-[15px]" aria-hidden="true">visibility</span>Detail</a>
+                                <a href="{{ route('bookings.show', $booking) }}" class="btn-sm btn-secondary" title="Detail {{ $booking->code }}"><span class="material-symbols-outlined text-[15px]" aria-hidden="true">visibility</span><span class="sr-only">Detail {{ $booking->code }}</span></a>
                             </td>
                         </tr>
                     @empty
-                        <tr><td colspan="8" class="py-12 text-center text-slate-500">Tidak ada pemesanan pada periode ini.</td></tr>
+                        <tr><td colspan="7" class="py-12 text-center text-slate-500">Tidak ada pemesanan pada periode ini.</td></tr>
                     @endforelse
                 </tbody>
             </table>

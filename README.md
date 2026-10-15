@@ -11,6 +11,7 @@ Dibuat untuk Technical Test Fullstack Developer (Intern).
 - [Akun Demo](#akun-demo)
 - [Instalasi](#instalasi)
 - [Panduan Penggunaan](#panduan-penggunaan)
+- [Screenshot](#screenshot)
 - [Aturan Bisnis](#aturan-bisnis)
 - [Physical Data Model](#physical-data-model)
 - [Activity Diagram](#activity-diagram)
@@ -153,6 +154,36 @@ Beberapa pemesanan berstatus *Disetujui* dengan waktu mulai yang sudah lewat, se
 4. Approver hanya bisa bertindak pada gilirannya. Pemesanan dengan level 1 yang belum diputuskan belum muncul di inbox approver level 2.
 
 Approver yang dipilih di data demo diacak. Kalau inbox satu approver kosong, coba login dengan approver lain.
+
+## Screenshot
+
+### Login
+
+![Halaman login](docs/images/screenshots/01-login.png)
+
+### Admin
+
+| Dashboard | Daftar Pemesanan |
+|---|---|
+| ![Dashboard admin](docs/images/screenshots/02-dashboard-admin.png) | ![Daftar pemesanan](docs/images/screenshots/03-daftar-pemesanan.png) |
+
+| Form Pemesanan | Detail Pemesanan (menunggu persetujuan) |
+|---|---|
+| ![Form pemesanan](docs/images/screenshots/04-form-pemesanan.png) | ![Detail pemesanan pending](docs/images/screenshots/05-detail-pemesanan-pending.png) |
+
+| Detail Pemesanan (selesai, dengan riwayat pemakaian) | Laporan & Export Excel |
+|---|---|
+| ![Detail pemesanan selesai](docs/images/screenshots/06-detail-pemesanan-selesai.png) | ![Laporan](docs/images/screenshots/07-laporan.png) |
+
+| Log Aktivitas |
+|---|
+| ![Log aktivitas](docs/images/screenshots/08-log-aktivitas.png) |
+
+### Approver
+
+| Dashboard | Persetujuan Saya | Detail & Keputusan |
+|---|---|---|
+| ![Dashboard approver](docs/images/screenshots/09-dashboard-approver.png) | ![Persetujuan saya](docs/images/screenshots/10-persetujuan-saya.png) | ![Detail persetujuan](docs/images/screenshots/11-detail-persetujuan.png) |
 
 ## Aturan Bisnis
 
