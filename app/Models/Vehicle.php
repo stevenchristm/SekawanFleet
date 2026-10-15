@@ -2,10 +2,10 @@
 
 namespace App\Models;
 
-use App\Enums\VehicleType;
+use App\Enums\BookingStatus;
 use App\Enums\Ownership;
 use App\Enums\VehicleStatus;
-use App\Enums\BookingStatus;
+use App\Enums\VehicleType;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -33,7 +33,7 @@ class Vehicle extends Model
 
     protected $fillable = [
         'location_id', 'rental_company_id', 'plate_number', 'brand_model',
-        'type', 'ownership', 'capacity', 'status'
+        'type', 'ownership', 'capacity', 'status',
     ];
 
     protected function casts(): array
@@ -41,7 +41,7 @@ class Vehicle extends Model
         return [
             'type' => VehicleType::class,
             'ownership' => Ownership::class,
-            'status' => VehicleStatus::class
+            'status' => VehicleStatus::class,
         ];
     }
 
@@ -58,16 +58,6 @@ class Vehicle extends Model
     public function bookings(): HasMany
     {
         return $this->hasMany(Booking::class);
-    }
-
-    public function fuelLogs(): HasMany
-    {
-        return $this->hasMany(FuelLog::class);
-    }
-
-    public function serviceSchedules(): HasMany
-    {
-        return $this->hasMany(ServiceSchedule::class);
     }
 
     public function usages(): HasManyThrough

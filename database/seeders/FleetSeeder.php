@@ -2,8 +2,11 @@
 
 namespace Database\Seeders;
 
+use App\Models\Driver;
+use App\Models\Location;
+use App\Models\RentalCompany;
+use App\Models\Vehicle;
 use Illuminate\Database\Seeder;
-use App\Models\{Location, RentalCompany, Vehicle, Driver};
 
 class FleetSeeder extends Seeder
 {
@@ -31,7 +34,7 @@ class FleetSeeder extends Seeder
 
         foreach ($vehicles as $i => [$plate, $model, $type, $own, $cap]) {
             Vehicle::create([
-                'location_id'       => $locations[$i % $locations->count()]->id,
+                'location_id' => $locations[$i % $locations->count()]->id,
                 'rental_company_id' => $own === 'rented' ? $rentals->random()->id : null,
                 'plate_number' => $plate, 'brand_model' => $model, 'type' => $type,
                 'ownership' => $own, 'capacity' => $cap, 'status' => 'available',
@@ -42,8 +45,8 @@ class FleetSeeder extends Seeder
         foreach ($names as $i => $name) {
             Driver::create([
                 'location_id' => $locations[$i % $locations->count()]->id,
-                'name' => $name, 'phone' => '0812' . str_pad($i + 1, 8, '0', STR_PAD_LEFT),
-                'license_number' => 'SIM-' . (720000 + $i), 'is_active' => true,
+                'name' => $name, 'phone' => '0812'.str_pad($i + 1, 8, '0', STR_PAD_LEFT),
+                'license_number' => 'SIM-'.(720000 + $i), 'is_active' => true,
             ]);
         }
     }

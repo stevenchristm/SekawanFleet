@@ -13,7 +13,7 @@ class VehicleUsage extends Model
     {
         return [
             'fuel_liters' => 'decimal:2',
-            'returned_at' => 'datetime'
+            'returned_at' => 'datetime',
         ];
     }
 

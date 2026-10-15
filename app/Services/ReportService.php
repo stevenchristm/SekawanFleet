@@ -26,7 +26,7 @@ class ReportService
     /**
      * Ringkasan angka untuk periode & filter yang sama.
      *
-     * @param Filters $filters
+     * @param  Filters  $filters
      */
     public function summary(array $filters): array
     {
@@ -60,7 +60,7 @@ class ReportService
     /**
      * Rekap per kendaraan (hanya booking yang terpakai: approved/completed).
      *
-     * @param Filters $filters
+     * @param  Filters  $filters
      * @return array<int, object{plate_number:string, brand_model:string, type:string, ownership:string, trips:int, hours:float, km:int, liters:float}>
      */
     public function perVehicle(array $filters): array

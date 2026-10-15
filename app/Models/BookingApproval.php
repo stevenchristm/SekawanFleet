@@ -14,7 +14,7 @@ class BookingApproval extends Model
     {
         return [
             'status' => ApprovalStatus::class,
-            'acted_at' => 'datetime'
+            'acted_at' => 'datetime',
         ];
     }
 

@@ -2,19 +2,24 @@
 
 namespace Database\Seeders;
 
+use App\Models\Booking;
+use App\Models\BookingApproval;
+use App\Models\Driver;
+use App\Models\User;
+use App\Models\Vehicle;
+use App\Models\VehicleUsage;
 use Illuminate\Database\Seeder;
-use App\Models\{Booking, BookingApproval, Driver, User, Vehicle, VehicleUsage};
 use Illuminate\Support\Carbon;
 
 class BookingSeeder extends Seeder
 {
     public function run(): void
     {
-        $admin     = User::where('role', 'admin')->first();
+        $admin = User::where('role', 'admin')->first();
         $approvers = User::where('role', 'approver')->get();
-        $vehicles  = Vehicle::all();
-        $drivers   = Driver::all();
-        $dests     = ['Site Morowali - Pit Blok B', 'Site Pomalaa - Smelter', 'Site Kolaka - Jetty', 'Pelabuhan Morowali', 'Bandara Mutiara SIS Al-Jufri Palu', 'Kantor Cabang Palu'];
+        $vehicles = Vehicle::all();
+        $drivers = Driver::all();
+        $dests = ['Site Morowali - Pit Blok B', 'Site Pomalaa - Smelter', 'Site Kolaka - Jetty', 'Pelabuhan Morowali', 'Bandara Mutiara SIS Al-Jufri Palu', 'Kantor Cabang Palu'];
         $seq = [];
 
         $make = function (Carbon $start, string $status, array $levels) use ($admin, $dests, &$seq, &$vehicles, &$drivers, $approvers) {
@@ -26,7 +31,7 @@ class BookingSeeder extends Seeder
             $booking = Booking::create([
                 'code' => sprintf('BK-%s-%04d', $month, $seq[$month]),
                 'vehicle_id' => $vehicles->shift()->id,
-                'driver_id'  => $drivers->shift()->id,
+                'driver_id' => $drivers->shift()->id,
                 'created_by' => $admin->id,
                 'requester_name' => fake('id_ID')->name(),
                 'purpose' => fake()->randomElement(['Inspeksi site', 'Angkut sparepart', 'Antar tamu', 'Survey lokasi']),
@@ -57,25 +62,25 @@ class BookingSeeder extends Seeder
         };
 
         $allVehicles = Vehicle::all();
-        $allDrivers  = Driver::all();
+        $allDrivers = Driver::all();
 
         for ($d = 180; $d >= 1; $d -= rand(2, 4)) {
             $vehicles = $allVehicles->shuffle();
-            $drivers  = $allDrivers->shuffle();
+            $drivers = $allDrivers->shuffle();
             $day = now()->subDays($d)->setTime(rand(7, 10), 0);
 
             foreach (range(1, rand(1, 3)) as $_) {
                 match (true) {
                     rand(1, 10) <= 8 => $make($day, 'completed', ['approved', 'approved']),
-                    rand(0, 1) === 0 => $make($day, 'rejected',  ['rejected', 'skipped']),
-                    default          => $make($day, 'rejected',  ['approved', 'rejected']),
+                    rand(0, 1) === 0 => $make($day, 'rejected', ['rejected', 'skipped']),
+                    default => $make($day, 'rejected', ['approved', 'rejected']),
                 };
             }
         }
 
         foreach (range(1, 4) as $i) {
             $vehicles = $allVehicles->shuffle();
-            $drivers  = $allDrivers->shuffle();
+            $drivers = $allDrivers->shuffle();
             $day = now()->addDays($i)->setTime(8, 0);
 
             $make($day, 'pending', ['pending', 'waiting']);

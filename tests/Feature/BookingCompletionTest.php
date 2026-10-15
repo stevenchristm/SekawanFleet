@@ -19,7 +19,9 @@ class BookingCompletionTest extends TestCase
     use RefreshDatabase;
 
     private User $admin;
+
     private Vehicle $vehicle;
+
     private Driver $driver;
 
     protected function setUp(): void

@@ -7,6 +7,7 @@ use App\Models\Booking;
 use App\Models\Driver;
 use App\Models\Location;
 use App\Models\Region;
+use App\Models\RentalCompany;
 use App\Models\User;
 use App\Models\Vehicle;
 use App\Models\VehicleUsage;
@@ -20,9 +21,13 @@ class DashboardTest extends TestCase
     use RefreshDatabase;
 
     private User $admin;
+
     private Vehicle $car;
+
     private Vehicle $truck;
+
     private Driver $driver;
+
     private int $slot = 0;
 
     protected function setUp(): void
@@ -34,7 +39,7 @@ class DashboardTest extends TestCase
 
         $region = Region::create(['name' => 'Sulawesi Tengah']);
         $location = Location::create(['region_id' => $region->id, 'name' => 'Site 1', 'type' => 'mine']);
-        $rental = \App\Models\RentalCompany::create(['name' => 'PT Rental']);
+        $rental = RentalCompany::create(['name' => 'PT Rental']);
 
         $this->admin = User::factory()->admin()->create();
         $this->car = Vehicle::create([

@@ -25,12 +25,19 @@ class ReportTest extends TestCase
     use RefreshDatabase;
 
     private User $admin;
+
     private User $approver;
+
     private Vehicle $car;
+
     private Vehicle $truck;
+
     private Location $site;
+
     private Location $office;
+
     private Driver $driver;
+
     private int $slot = 0;
 
     protected function setUp(): void

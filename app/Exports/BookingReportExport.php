@@ -5,8 +5,8 @@ namespace App\Exports;
 use App\Exports\Sheets\BookingsSheet;
 use App\Exports\Sheets\SummarySheet;
 use App\Services\ReportService;
-use Maatwebsite\Excel\Concerns\Exportable;
 use Maatwebsite\Excel\Concerns\Export;
+use Maatwebsite\Excel\Concerns\Exportable;
 use Maatwebsite\Excel\Concerns\WithMultipleSheets;
 use Maatwebsite\Excel\Concerns\WithProperties;
 
@@ -20,7 +20,7 @@ class BookingReportExport implements Export, WithMultipleSheets, WithProperties
 
     public function __construct(
         public readonly array $filters,
-        private readonly ReportService $reports = new ReportService(),
+        private readonly ReportService $reports = new ReportService,
     ) {}
 
     public function sheets(): array

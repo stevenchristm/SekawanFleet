@@ -2,14 +2,15 @@
 
 namespace Database\Seeders;
 
+use App\Models\Location;
+use App\Models\User;
 use Illuminate\Database\Seeder;
-use App\Models\{User, Location};
 
 class UserSeeder extends Seeder
 {
     public function run(): void
     {
-        $hq     = Location::where('type', 'head_office')->first();
+        $hq = Location::where('type', 'head_office')->first();
         $branch = Location::where('type', 'branch_office')->first();
 
         $users = [

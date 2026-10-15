@@ -19,8 +19,11 @@ class ApprovalFlowTest extends TestCase
     use RefreshDatabase;
 
     private User $admin;
+
     private User $l1;
+
     private User $l2;
+
     private Booking $booking;
 
     protected function setUp(): void
