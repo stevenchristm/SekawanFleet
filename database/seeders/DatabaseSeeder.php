@@ -18,5 +18,8 @@ class DatabaseSeeder extends Seeder
         ]);
 
         activity()->enableLogging();
+
+        // Contoh isi log aktivitas (dibangun dari data booking di atas).
+        $this->call(ActivityLogSeeder::class);
     }
 }
