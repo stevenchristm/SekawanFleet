@@ -2,6 +2,7 @@
 
 namespace App\Policies;
 
+use App\Enums\BookingStatus;
 use App\Models\Booking;
 use App\Models\User;
 use App\Services\BookingService;
@@ -25,5 +26,13 @@ class BookingPolicy
     {
         return $user->isAdmin()
             && in_array($booking->status, BookingService::BLOCKING_STATUSES, true);
+    }
+
+    /** Catat pengembalian: admin, booking sudah disetujui penuh dan waktu mulainya sudah tiba. */
+    public function complete(User $user, Booking $booking): bool
+    {
+        return $user->isAdmin()
+            && $booking->status === BookingStatus::Approved
+            && $booking->start_at->lte(now());
     }
 }

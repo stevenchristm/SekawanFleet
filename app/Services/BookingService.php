@@ -9,6 +9,7 @@ use App\Models\BookingApproval;
 use App\Models\Driver;
 use App\Models\User;
 use App\Models\Vehicle;
+use App\Models\VehicleUsage;
 use Illuminate\Database\QueryException;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
@@ -110,6 +111,55 @@ class BookingService
             activity('booking')->performedOn($booking)->causedBy($user)
                 ->log("Pemesanan {$booking->code} dibatalkan");
         });
+    }
+
+    /**
+     * Catat pengembalian kendaraan: simpan odometer & BBM, lalu tutup booking (completed).
+     *
+     * @param  array{start_odometer:int, end_odometer:int, fuel_liters:?float, returned_at:string, notes:?string}  $data
+     */
+    public function complete(Booking $booking, array $data, User $user): VehicleUsage
+    {
+        return DB::transaction(function () use ($booking, $data, $user) {
+            $booking = Booking::whereKey($booking->id)->lockForUpdate()->firstOrFail();
+
+            // Cek ulang setelah lock: bisa saja sudah dibatalkan/diselesaikan di request lain.
+            if ($booking->status !== BookingStatus::Approved || $booking->usage()->exists()) {
+                throw ValidationException::withMessages([
+                    'booking' => 'Pengembalian hanya bisa dicatat untuk pemesanan yang disetujui dan belum selesai.',
+                ]);
+            }
+
+            $usage = $booking->usage()->create([
+                'start_odometer' => $data['start_odometer'],
+                'end_odometer' => $data['end_odometer'],
+                'fuel_liters' => $data['fuel_liters'] ?? null,
+                'returned_at' => Carbon::parse($data['returned_at']),
+                'notes' => $data['notes'] ?? null,
+            ]);
+
+            $booking->update(['status' => BookingStatus::Completed]);
+
+            activity('booking')->performedOn($booking)->causedBy($user)
+                ->withProperties([
+                    'distance_km' => $usage->distance,
+                    'fuel_liters' => $usage->fuel_liters,
+                    'returned_at' => $usage->returned_at->toDateTimeString(),
+                ])
+                ->log("Pengembalian kendaraan {$booking->code} dicatat ({$usage->distance} km)");
+
+            return $usage;
+        });
+    }
+
+    /** Odometer terakhir yang tercatat untuk kendaraan ini (untuk mengisi otomatis form pengembalian). */
+    public function lastOdometer(int $vehicleId): ?int
+    {
+        return VehicleUsage::query()
+            ->whereHas('booking', fn ($q) => $q->where('vehicle_id', $vehicleId))
+            ->whereNotNull('end_odometer')
+            ->latest('returned_at')
+            ->value('end_odometer');
     }
 
     /**

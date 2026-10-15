@@ -105,6 +105,38 @@
                     </div>
                 </dl>
             </section>
+
+            @if ($booking->usage)
+                @php $usage = $booking->usage; @endphp
+                <section class="card space-y-5 p-6">
+                    <div class="flex items-center justify-between border-b border-slate-100 pb-4">
+                        <div class="flex items-center gap-2.5">
+                            <span class="flex h-8 w-8 items-center justify-center rounded-lg bg-blue-50 text-blue-700"><span class="material-symbols-outlined" aria-hidden="true">speed</span></span>
+                            <div>
+                                <h3 class="card-title">Riwayat Pemakaian</h3>
+                                <p class="card-subtitle">Dicatat saat kendaraan kembali ke pool</p>
+                            </div>
+                        </div>
+                        <span class="tabular font-mono text-xs text-slate-500">{{ $usage->returned_at?->format('d/m/Y H:i') }}</span>
+                    </div>
+                    <dl class="grid grid-cols-2 gap-3 md:grid-cols-4">
+                        @foreach ([
+                            ['Odometer awal', number_format($usage->start_odometer, 0, ',', '.').' km'],
+                            ['Odometer akhir', $usage->end_odometer !== null ? number_format($usage->end_odometer, 0, ',', '.').' km' : '-'],
+                            ['Jarak tempuh', $usage->distance !== null ? number_format($usage->distance, 0, ',', '.').' km' : '-'],
+                            ['BBM', $usage->fuel_liters !== null ? number_format((float) $usage->fuel_liters, 1, ',', '.').' L' : '-'],
+                        ] as [$label, $value])
+                            <div class="rounded-lg border border-slate-200 bg-slate-50 p-3">
+                                <dt class="text-[11px] text-slate-500">{{ $label }}</dt>
+                                <dd class="tabular mt-0.5 font-mono font-semibold text-slate-900">{{ $value }}</dd>
+                            </div>
+                        @endforeach
+                    </dl>
+                    @if ($usage->notes)
+                        <p class="rounded-lg border border-slate-200 bg-slate-50 p-3 text-sm text-slate-700">{{ $usage->notes }}</p>
+                    @endif
+                </section>
+            @endif
         </div>
 
         {{-- Kanan: persetujuan --}}
@@ -160,6 +192,83 @@
                         @include('approvals._actions', ['approval' => $myTurn->setRelation('booking', $booking), 'stretch' => true])
                     </div>
                 @endif
+
+                @can('complete', $booking)
+                    <div class="space-y-3 rounded-xl border border-blue-200 bg-blue-50 p-4">
+                        <div class="flex items-start gap-2.5">
+                            <span class="material-symbols-outlined mt-0.5 shrink-0 text-blue-600" aria-hidden="true">assignment_return</span>
+                            <div>
+                                <h4 class="font-semibold text-blue-950">Kendaraan sedang/sudah dipakai</h4>
+                                <p class="mt-0.5 text-xs leading-snug text-blue-800">Catat odometer dan BBM saat kendaraan kembali untuk menyelesaikan pemesanan.</p>
+                            </div>
+                        </div>
+                        <button type="button" x-data x-on:click.prevent="$dispatch('open-modal', 'complete-booking')" class="btn w-full bg-blue-600 text-white shadow-sm hover:bg-blue-700 focus:ring-blue-200">
+                            <span class="material-symbols-outlined text-lg" aria-hidden="true">assignment_return</span>Catat Pengembalian
+                        </button>
+                    </div>
+
+                    <x-modal name="complete-booking" :show="$errors->hasAny(['start_odometer', 'end_odometer', 'fuel_liters', 'returned_at', 'notes'])" maxWidth="lg" focusable>
+                        <form method="POST" action="{{ route('bookings.complete', $booking) }}">
+                            @csrf
+                            <div class="flex items-start justify-between border-b border-slate-100 p-6 pb-4">
+                                <div class="flex items-start gap-3.5">
+                                    <span class="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-blue-200 bg-blue-50 text-blue-600">
+                                        <span class="material-symbols-outlined text-[22px]" aria-hidden="true">assignment_return</span>
+                                    </span>
+                                    <div>
+                                        <h2 class="text-base font-bold leading-snug text-slate-900">Catat pengembalian {{ $booking->vehicle->plate_number }}</h2>
+                                        <p class="mt-0.5 text-xs text-slate-500">Pemesanan {{ $booking->code }} akan ditandai Selesai.</p>
+                                    </div>
+                                </div>
+                                <button type="button" x-on:click="$dispatch('close')" class="flex h-8 w-8 items-center justify-center rounded-lg text-slate-400 hover:bg-slate-100 hover:text-slate-600" aria-label="Tutup">
+                                    <span class="material-symbols-outlined" aria-hidden="true">close</span>
+                                </button>
+                            </div>
+
+                            <div class="grid grid-cols-1 gap-4 p-6 sm:grid-cols-2">
+                                <div>
+                                    <label for="start_odometer" class="form-label">Odometer awal (km) <span class="text-red-600">*</span></label>
+                                    <input id="start_odometer" name="start_odometer" type="number" min="0" required inputmode="numeric"
+                                           value="{{ old('start_odometer', $lastOdometer) }}" class="form-input">
+                                    @if ($lastOdometer && ! old('start_odometer'))
+                                        <p class="mt-1 text-[11px] text-slate-500">Diisi dari pengembalian terakhir kendaraan ini.</p>
+                                    @endif
+                                    <x-input-error :messages="$errors->get('start_odometer')" class="mt-1.5" />
+                                </div>
+                                <div>
+                                    <label for="end_odometer" class="form-label">Odometer akhir (km) <span class="text-red-600">*</span></label>
+                                    <input id="end_odometer" name="end_odometer" type="number" min="0" required inputmode="numeric"
+                                           value="{{ old('end_odometer') }}" class="form-input">
+                                    <x-input-error :messages="$errors->get('end_odometer')" class="mt-1.5" />
+                                </div>
+                                <div>
+                                    <label for="fuel_liters" class="form-label">BBM terpakai / diisi (liter)</label>
+                                    <input id="fuel_liters" name="fuel_liters" type="number" min="0" step="0.1" inputmode="decimal"
+                                           value="{{ old('fuel_liters') }}" class="form-input">
+                                    <x-input-error :messages="$errors->get('fuel_liters')" class="mt-1.5" />
+                                </div>
+                                <div>
+                                    <label for="returned_at" class="form-label">Waktu kembali <span class="text-red-600">*</span></label>
+                                    <input id="returned_at" name="returned_at" type="datetime-local" required
+                                           value="{{ old('returned_at', now()->min($booking->end_at)->max($booking->start_at)->format('Y-m-d\TH:i')) }}" class="form-input">
+                                    <x-input-error :messages="$errors->get('returned_at')" class="mt-1.5" />
+                                </div>
+                                <div class="sm:col-span-2">
+                                    <label for="notes" class="form-label">Catatan kondisi</label>
+                                    <textarea id="notes" name="notes" rows="2" maxlength="500" placeholder="mis. Ban belakang kiri perlu dicek" class="form-textarea">{{ old('notes') }}</textarea>
+                                    <x-input-error :messages="$errors->get('notes')" class="mt-1.5" />
+                                </div>
+                            </div>
+
+                            <div class="flex items-center justify-end gap-2.5 border-t border-slate-100 bg-slate-50 px-6 py-4">
+                                <button type="button" x-on:click="$dispatch('close')" class="btn-secondary btn-sm h-[38px]">Batal</button>
+                                <button type="submit" class="btn btn-sm h-[38px] bg-blue-600 font-semibold text-white hover:bg-blue-700 focus:ring-blue-200">
+                                    <span class="material-symbols-outlined text-base" aria-hidden="true">task_alt</span>Simpan &amp; Selesaikan
+                                </button>
+                            </div>
+                        </form>
+                    </x-modal>
+                @endcan
 
                 @can('cancel', $booking)
                     <div class="space-y-2 border-t border-slate-100 pt-4">

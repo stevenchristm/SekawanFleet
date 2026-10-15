@@ -7,7 +7,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class VehicleUsage extends Model
 {
-    protected $fillable = ['booking_id', 'start_odometer', 'end_odometer', 'fuel_liters', 'returned_at'];
+    protected $fillable = ['booking_id', 'start_odometer', 'end_odometer', 'fuel_liters', 'notes', 'returned_at'];
 
     protected function casts(): array
     {

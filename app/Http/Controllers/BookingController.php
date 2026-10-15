@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Enums\BookingStatus;
 use App\Enums\UserRole;
 use App\Enums\VehicleStatus;
+use App\Http\Requests\CompleteBookingRequest;
 use App\Http\Requests\StoreBookingRequest;
 use App\Models\Booking;
 use App\Models\Driver;
@@ -84,9 +85,22 @@ class BookingController extends Controller
     {
         Gate::authorize('view', $booking);
 
-        $booking->load(['vehicle.location', 'vehicle.rentalCompany', 'driver', 'creator', 'approvals.approver']);
+        $booking->load(['vehicle.location', 'vehicle.rentalCompany', 'driver', 'creator', 'approvals.approver', 'usage']);
 
-        return view('bookings.show', compact('booking'));
+        return view('bookings.show', [
+            'booking' => $booking,
+            'lastOdometer' => Gate::allows('complete', $booking) ? $this->bookings->lastOdometer($booking->vehicle_id) : null,
+        ]);
+    }
+
+    public function complete(CompleteBookingRequest $request, Booking $booking): RedirectResponse
+    {
+        Gate::authorize('complete', $booking);
+
+        $usage = $this->bookings->complete($booking, $request->validated(), $request->user());
+
+        return redirect()->route('bookings.show', $booking)
+            ->with('success', "Pengembalian {$booking->code} dicatat: {$usage->distance} km. Pemesanan selesai.");
     }
 
     public function cancel(Request $request, Booking $booking): RedirectResponse
