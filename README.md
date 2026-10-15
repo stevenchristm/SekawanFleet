@@ -36,7 +36,7 @@ Dibuat untuk Technical Test Fullstack Developer (Intern).
 | a. Physical data model | [Physical Data Model](#physical-data-model) |
 | b. Activity diagram | [Activity Diagram](#activity-diagram), 10 diagram per aktor ditambah siklus status |
 | c. Log aplikasi pada tiap proses | Login/logout, pemesanan, persetujuan, pembatalan, pengembalian, jadwal servis, export laporan, dan perubahan data armada. Tersimpan di database dan file harian, dan bisa dilihat di menu **Log Aktivitas** |
-| d. UI/UX baik & responsive | Layout sidebar yang berubah menjadi drawer di layar < 1024 px, badge status, timeline persetujuan, dan pesan validasi berbahasa Indonesia |
+| d. UI/UX baik & responsive | Layout sidebar yang berubah menjadi drawer di layar < 1024 px, badge status, timeline persetujuan, dan pesan validasi berbahasa Indonesia. Lihat [Tampilan Mobile](#tampilan-mobile) |
 
 Fitur tambahan:
 
@@ -201,6 +201,14 @@ Approver yang dipilih di data demo diacak. Kalau inbox satu approver kosong, cob
 | Dashboard | Persetujuan Saya | Detail & Keputusan |
 |---|---|---|
 | ![Dashboard approver](docs/images/screenshots/09-dashboard-approver.png) | ![Persetujuan saya](docs/images/screenshots/10-persetujuan-saya.png) | ![Detail persetujuan](docs/images/screenshots/11-detail-persetujuan.png) |
+
+### Tampilan Mobile
+
+Aplikasi yang sama dibuka di layar HP (lebar 390 px). Di bawah 1024 px, sidebar berubah menjadi menu drawer yang dibuka lewat tombol hamburger, kartu dan grafik tersusun satu kolom, dan tidak ada halaman yang perlu digeser ke samping.
+
+| Dashboard Admin | Menu Drawer | Detail Pemesanan | Persetujuan (Approver) |
+|---|---|---|---|
+| ![Dashboard mobile](docs/images/screenshots/14-mobile-dashboard.png) | ![Menu drawer mobile](docs/images/screenshots/15-mobile-menu.png) | ![Detail pemesanan mobile](docs/images/screenshots/16-mobile-detail-pemesanan.png) | ![Persetujuan mobile](docs/images/screenshots/17-mobile-persetujuan.png) |
 
 ## Aturan Bisnis
 
